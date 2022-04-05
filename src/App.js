@@ -1,13 +1,32 @@
 import './App.css';
-import {useState} from 'react';
-import Square from './components/Square'
+import {useState, useEffect} from 'react';
+import Square from './components/Square';
+import { Patterns } from './Patterns';
 
 function App() {
   // 9 empty strings in the array
   // would update to either "X", "0", or stays empty ""
   const [board, setBoard] = useState(["", "", "", "", "", "", "", "", ""]);
-  const [player, setPlayer] = useState("X");
+  const [player, setPlayer] = useState("O");
+  const [result, setResult] = useState({winner: "none", state: "none"})
   
+  useEffect(() =>{
+    checkIfTie();
+    checkPattern();
+    if (player == "X") {
+      setPlayer("O");
+    } else {
+      setPlayer("X");
+    }
+  }, [board]);
+
+  useEffect(() =>{
+    if (result.state != "none"){
+      alert(`Game Finished! Winner Player: ${result.winner}`);
+      restartGame();
+    }
+  }, [result]);
+
   const chooseSquare = (square) => {
     setBoard(
       board.map((val, index) => {
@@ -18,33 +37,50 @@ function App() {
         return val;
       })
     );
+  };
 
-    if (player == "X") {
-      setPlayer("O");
-    } else {
-      setPlayer("X");
+  const checkPattern = () => {
+    Patterns.forEach((currentPattern) => {
+      const firstPlayer = board[currentPattern[0]];
+      if (firstPlayer == "") return;
+      let foundWinningPattern = true;
+      currentPattern.forEach((index) => {
+        if (board[index] != firstPlayer){
+          foundWinningPattern = false;
+        }
+      });
+
+      if (foundWinningPattern){
+        setResult({winner: player, state: "Won"})
+      }
+    });
+  };
+
+  const checkIfTie = () => {
+    let filled = true;
+    board.forEach((square) => {
+      if (square == ""){
+        filled = false;
+      }
+    })
+
+    if (filled){
+      setResult({winner: "No one", state: "Tie"});
     }
+  }
+
+  const restartGame = () => {
+    setBoard(["", "", "", "", "", "", "", "", ""]);
+    setPlayer("X");
   }
 
   return (
     <div className="App">
       <div className="board">
         <div className="row">
-          <Square 
-            val={board[0]} 
-            chooseSquare={() => {
-              chooseSquare(0)}}
-          />
-          <Square 
-            val={board[1]} 
-            chooseSquare={() => {
-              chooseSquare(1)}}
-          />
-          <Square 
-            val={board[2]} 
-            chooseSquare={() => {
-              chooseSquare(2)}}
-          />
+          <Square val={board[0]} chooseSquare={() => {chooseSquare(0)}}/>
+          <Square val={board[1]} chooseSquare={() => {chooseSquare(1)}}/>
+          <Square val={board[2]} chooseSquare={() => {chooseSquare(2)}}/>
         </div>
         <div className="row">
         <Square 
